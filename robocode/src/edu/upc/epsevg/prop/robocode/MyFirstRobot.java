@@ -1,7 +1,5 @@
 package edu.upc.epsevg.prop.robocode;
 
-import robocode.AdvancedRobot;
-import robocode.Robot;
 import robocode.Rules;
 import robocode.ScannedRobotEvent;
 import robocode.TeamRobot;
@@ -24,6 +22,15 @@ public class MyFirstRobot extends TeamRobot{
     
     @Override
     public void onScannedRobot(ScannedRobotEvent event) {
+        double Rotate = event.getBearing();
+        double gunDir = getGunHeading();
+        double Dir = getHeading();
+        double finalRotate = Dir - gunDir + Rotate;
+        if (finalRotate < -180) finalRotate = 360.0 - finalRotate;
+        if (finalRotate > 180) finalRotate = -360.0 + finalRotate;
+        if ((finalRotate > 5 || finalRotate < -5)) {
+            setTurnGunRight(finalRotate);
+        }
         fire(Rules.MAX_BULLET_POWER);
     }
     //public void onScannedRobot ()
