@@ -58,9 +58,11 @@ public class Droid extends AdvancedRobot {
       }
     }
     if (!e.getName().equals(objectiu)) return;
-    if (!sortintDeLaParet && vidaObjectiu - e.getEnergy() >= Rules.MIN_BULLET_POWER 
+    if (!sortintDeLaParet && vidaObjectiu 
+        - e.getEnergy() >= Rules.MIN_BULLET_POWER 
         && vidaObjectiu - e.getEnergy() <= Rules.MAX_BULLET_POWER 
-        && !(vidaObjectiu - e.getEnergy() > 0.57 && vidaObjectiu - e.getEnergy() < 0.63)) {
+        && !(vidaObjectiu - e.getEnergy() > 0.57 
+        && vidaObjectiu - e.getEnergy() < 0.63)) {
       dir *= -1;
     }
     if (!aniraAImpactar(0.6)) {
