@@ -57,7 +57,10 @@ public class ExerciciP extends AdvancedRobot {
       }
     }
     if (!e.getName().equals(alvo)) return;
-    if (!saindoDaParede && vidaAlvo - e.getEnergy() >= Rules.MIN_BULLET_POWER && vidaAlvo - e.getEnergy() <= Rules.MAX_BULLET_POWER && !(vidaAlvo - e.getEnergy() > 0.57 && vidaAlvo - e.getEnergy() < 0.63)) {
+    if (!saindoDaParede && vidaAlvo - e.getEnergy() 
+            >= Rules.MIN_BULLET_POWER && vidaAlvo - e.getEnergy() 
+            <= Rules.MAX_BULLET_POWER && !(vidaAlvo - e.getEnergy() 
+            > 0.57 && vidaAlvo - e.getEnergy() < 0.63)) {
       dir *= -1;
     }
     if (!vaiBater(0.6)) {
