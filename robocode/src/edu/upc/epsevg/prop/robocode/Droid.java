@@ -2,18 +2,27 @@ package edu.upc.epsevg.prop.robocode;
 
 import robocode.*;
 import static robocode.util.Utils.*;
+import java.io.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Droid extends TeamRobot {
   
   double d = 150.0, dir = 1;
   boolean picaParet = false;
   
-  String objeciu = "cap";
+  String objectiu = "cap";
   double vidaobjeciu, distobjeciu;
+  
+  boolean pacific = false;
+  boolean orbita = false;
   
   boolean escollint = false;
   String enemics[];
   double disenemics[];
+  
+  // provar que l array nomes sigui de 5, en comptes de que sigui getOthers();
+  // que al final ens estalviem moltes linies
   
   @Override
   public void run() {
@@ -36,7 +45,7 @@ public class Droid extends TeamRobot {
   @Override
   public void onScannedRobot(ScannedRobotEvent e) {
     if (getOthers() == 1 && !isTeammate(e.getName())) {
-      objeciu = e.getName();
+      objectiu = e.getName();
     } else {
       if (escollint) {
         for (int i = 0; i < enemics.length; i++) {
@@ -46,6 +55,13 @@ public class Droid extends TeamRobot {
             disenemics[i] = e.getDistance();
             if (i == enemics.length-1) {
               escollirObjectiuInd();
+              distobjeciu = e.getDistance();
+              String envia = "objectiu ,"+objectiu+","+e.getDistance();
+              try {
+                broadcastMessage(envia);
+              } catch (IOException ex) {
+                Logger.getLogger(Droid.class.getName()).log(Level.SEVERE, null, ex);
+              }
             }
             i = enemics.length;
           }
@@ -53,7 +69,7 @@ public class Droid extends TeamRobot {
         return;
       }
     }
-    if (!e.getName().equals(objeciu)) return;
+    if (!e.getName().equals(objectiu)) return;
     if (!anemAxocar(0.6)) {
       setTurnRight(e.getBearing() + 90 - (e.getDistance() > getHeight()*3 ? 40 : 10) * dir);
     }
@@ -69,7 +85,7 @@ public class Droid extends TeamRobot {
   
   @Override
   public void onHitRobot(HitRobotEvent e) {
-    if(isTeammate(e.getName())){
+    if(!objectiu.equals(e.getName())){
         dir *= -1;
     }
   }
@@ -94,7 +110,7 @@ public class Droid extends TeamRobot {
   
   @Override
   public void onRobotDeath(RobotDeathEvent e) {
-    if (e.getName().equals(objeciu)) {
+    if (e.getName().equals(objectiu)) {
       if (getOthers() > 1) {
         prepObjectiu();
       } else {
@@ -125,7 +141,22 @@ public class Droid extends TeamRobot {
         menorDis = disenemics[i];
       }
     }
-    objeciu = enemics[victima];
+    objectiu = enemics[victima];
+    distobjeciu = disenemics[victima];
+  }
+  
+  
+  // en aquesta mateix fucnio es pot canviar l enemic, de manera que cada cop que rep
+  // un missatge canvia o no l objectiu, i aixi esta sempre en constant actualitxacio
+  @Override
+  public void onMessageReceived(MessageEvent e){
+      String walkieTalkie = (String)e.getMessage().toString();
+      String missatge[] = walkieTalkie.split(",");
+      String victima = missatge[1];
+      Double distancia = Double.valueOf(missatge[2]);
+      if(distancia < distobjeciu){
+            objectiu = victima;
+      }
   }
   
   double ajustarRadar(double absBearing) {
