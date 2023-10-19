@@ -55,8 +55,8 @@ public class Droid extends TeamRobot {
             disenemics[i] = e.getDistance();
             if (i == enemics.length-1) {
               escollirObjectiuInd();
-              distobjeciu = e.getDistance();
-              String envia = "objectiu ,"+objectiu+","+e.getDistance();
+              String envia = "objectiu ,"+objectiu+","+distobjeciu;
+              out.println(envia);
               try {
                 broadcastMessage(envia);
               } catch (IOException ex) {
@@ -150,11 +150,13 @@ public class Droid extends TeamRobot {
   // un missatge canvia o no l objectiu, i aixi esta sempre en constant actualitxacio
   @Override
   public void onMessageReceived(MessageEvent e){
-      String walkieTalkie = (String)e.getMessage().toString();
+      String walkieTalkie = e.getMessage().toString();
       String missatge[] = walkieTalkie.split(",");
       String victima = missatge[1];
-      Double distancia = Double.valueOf(missatge[2]);
-      if(distancia < distobjeciu){
+      double distancia = Double.parseDouble(missatge[2]);
+      out.println(distancia + " " + distobjeciu);
+      if(distancia <= distobjeciu){
+            out.println("canvio objectiu");
             objectiu = victima;
       }
   }
