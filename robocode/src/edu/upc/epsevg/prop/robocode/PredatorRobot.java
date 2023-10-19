@@ -6,7 +6,7 @@ import java.io.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Droid extends TeamRobot {
+public class PredatorRobot extends TeamRobot {
   
   double d = 150.0, dir = 1;
   boolean picaParet = false;
@@ -15,7 +15,7 @@ public class Droid extends TeamRobot {
   double vidaobjeciu, distobjeciu;
   
   boolean pacific = false;
-  boolean orbita = false;
+  double temps = 0.0;
   
   boolean escollint = false;
   String enemics[];
@@ -32,10 +32,10 @@ public class Droid extends TeamRobot {
     prepObjectiu();
     while (true) {
       setAhead((distobjeciu / 4 + 25) * dir);
-      if (!picaParet && anemAxocar(3) && vidaobjeciu >= 45) {
+      if (!picaParet && anemAxocar(3)) {
         dir *= -1;
         picaParet = true;
-      } else if (!anemAxocar(3.2) && vidaobjeciu >= 45) {
+      } else if (!anemAxocar(3.2)) {
         picaParet = false;
       }
       execute();
@@ -71,14 +71,22 @@ public class Droid extends TeamRobot {
     }
     if (!e.getName().equals(objectiu)) return;
     if (!anemAxocar(0.6)) {
-      setTurnRight(e.getBearing() + 90 - (e.getDistance() > getHeight()*3 ? 40 : 10) * dir);
+        temps = e.getTime();
+        out.println(temps);
+        if(temps >= 2000){
+            dir *= -1;
+            temps = e.getTime();
+        }
+      if(!pacific)setTurnRight(e.getBearing() + 90 -(e.getDistance() > getHeight()*3 ? 40 : 10) * dir);
+      if(pacific)setTurnRight(e.getBearing()-(e.getDistance() > getHeight()*3 ? 40 : 10) * dir);
     }
     double absBearing = e.getBearing() + getHeading();
     setTurnRadarRight(ajustarRadar(absBearing));
     setTurnGunRightRadians(aimDef(e)*0.85);
     if(e.getEnergy() > 45){
         setFire(piupiu(e.getDistance()));
-    }
+        pacific = false;
+    } else pacific = true;
     vidaobjeciu = e.getEnergy();
     distobjeciu = e.getDistance();
   }
@@ -110,6 +118,7 @@ public class Droid extends TeamRobot {
   
   @Override
   public void onRobotDeath(RobotDeathEvent e) {
+      pacific = false;
     if (e.getName().equals(objectiu)) {
       if (getOthers() > 1) {
         prepObjectiu();
@@ -122,6 +131,7 @@ public class Droid extends TeamRobot {
   }
   
   void prepObjectiu() {
+      pacific = false;
     enemics = new String[getOthers()];
     disenemics = new double[getOthers()];
     for (int i = 0; i < enemics.length; i++) {
@@ -154,11 +164,17 @@ public class Droid extends TeamRobot {
       String missatge[] = walkieTalkie.split(",");
       String victima = missatge[1];
       double distancia = Double.parseDouble(missatge[2]);
-      out.println(distancia + " " + distobjeciu);
-      if(distancia <= distobjeciu){
-            out.println("canvio objectiu");
-            objectiu = victima;
-      }
+      if(distobjeciu == 0.0 || distancia < distobjeciu) objectiu = victima; // l altre l ha detectat abans o esta mes a prop (el mateix)
+      out.println("victima: " + victima);
+      out.println("objectiu: " + victima);
+      String envia = "objectiu ,"+objectiu+","+distobjeciu;
+        out.println(envia);
+        try {
+          broadcastMessage(envia);
+        } catch (IOException ex) {
+          Logger.getLogger(Droid.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        // bucle infinit d enviament d informacio entre els membres de l equip
   }
   
   double ajustarRadar(double absBearing) {
