@@ -15,7 +15,7 @@ public class PredatorRobot extends TeamRobot {
   double vidaobjeciu, distobjeciu;
   
   boolean pacific = false;
-  double temps = 0.0;
+  double temps = 0.0; // pensar la variable temps
   
   boolean escollint = false;
   String enemics[];
@@ -71,12 +71,7 @@ public class PredatorRobot extends TeamRobot {
     }
     if (!e.getName().equals(objectiu)) return;
     if (!anemAxocar(0.6)) {
-        temps = e.getTime();
-        out.println(temps);
-        if(temps >= 2000){
-            dir *= -1;
-            temps = e.getTime();
-        }
+        
       if(!pacific)setTurnRight(e.getBearing() + 90 -(e.getDistance() > getHeight()*3 ? 40 : 10) * dir);
       if(pacific)setTurnRight(e.getBearing()-(e.getDistance() > getHeight()*3 ? 40 : 10) * dir);
     }
