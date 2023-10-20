@@ -72,8 +72,37 @@ public class PredatorRobot extends TeamRobot {
     if (!e.getName().equals(objectiu)) return;
     if (!anemAxocar(0.6)) {
         
-      if(!pacific)setTurnRight(e.getBearing() + 90 -(e.getDistance() > getHeight()*3 ? 40 : 10) * dir);
-      if(pacific)setTurnRight(e.getBearing()-(e.getDistance() > getHeight()*3 ? 40 : 10) * dir);
+      if(!pacific){
+        double bearing = e.getBearing();
+        double distance = e.getDistance();
+        double height = getHeight();
+
+        double angleToTurn;
+
+        if (distance > height * 3) {
+            angleToTurn = bearing + 90 - (40 * dir);
+        } else {
+            angleToTurn = bearing + 90 - (10 * dir);
+        }
+
+        setTurnRight(angleToTurn);
+
+      }
+      if(pacific){
+        double bearing = e.getBearing();
+        double distance = e.getDistance();
+        double height = getHeight();
+
+        double angleToTurn;
+
+        if (distance > height * 3) {
+            angleToTurn = bearing - (40 * dir);
+        } else {
+            angleToTurn = bearing - (10 * dir);
+        }
+
+        setTurnRight(angleToTurn);
+      }
     }
     double absBearing = e.getBearing() + getHeading();
     setTurnRadarRight(ajustarRadar(absBearing));
@@ -172,25 +201,18 @@ public class PredatorRobot extends TeamRobot {
         // bucle infinit d enviament d informacio entre els membres de l equip
   }
   
-  double ajustarRadar(double absBearing) {
+ double ajustarRadar(double absBearing) {
     if (getOthers() > 1) {
-      double modR;
-      modR = normalRelativeAngleDegrees((absBearing - getRadarHeading()));
-      modR += 22.5*Math.signum(modR);
-      if (modR > 45.0) {
-        modR = 45.0;
-      } else if (modR < -45.0) {
-        modR = -45.0;
-      } else if (modR > 0.0 && modR < 20.0) {
-        modR = 20.0;
-      } else if (modR > -20.0 && modR <= 0.0) {
-        modR = -20.0;
-      }
-      return modR;
+        double modR = 0.0;
+        modR = normalRelativeAngleDegrees(absBearing - getRadarHeading()) + 22.5 * Math.signum(modR);
+        modR = Math.max(-45.0, Math.min(45.0, modR));
+        modR = Math.max(-20.0, Math.min(20.0, modR));
+        return modR;
     } else {
-      return normalRelativeAngleDegrees((absBearing - getRadarHeading())*2);
+        return normalRelativeAngleDegrees((absBearing - getRadarHeading()) * 2);
     }
-  }
+}
+
   
   double aimDef(ScannedRobotEvent e) {
     if (e.getEnergy() != 0.0) {
