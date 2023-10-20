@@ -8,27 +8,28 @@ import java.util.logging.Logger;
 
 public class PredatorRobot extends TeamRobot {
   
-  double d = 150.0, dir = 1;
+  double dir = 1;
   boolean picaParet = false;
   
   String objectiu = "cap";
   double vidaobjeciu, distobjeciu;
   
   boolean pacific = false;
-  double temps = 0.0; // pensar la variable temps
   
   boolean escollint = false;
   String enemics[];
   double disenemics[];
-  
-  // provar que l array nomes sigui de 5, en comptes de que sigui getOthers();
-  // que al final ens estalviem moltes linies
   
   @Override
   public void run() {
     setAdjustGunForRobotTurn(true);
     setAdjustRadarForRobotTurn(true);
     setAdjustRadarForGunTurn(true);
+    try {
+        broadcastMessage("pos" + getX() + "," + getY());
+      } catch (IOException ex) {
+        Logger.getLogger(Droid.class.getName()).log(Level.SEVERE, null, ex);
+      }
     prepObjectiu();
     while (true) {
       setAhead((distobjeciu / 4 + 25) * dir);
@@ -125,25 +126,30 @@ public class PredatorRobot extends TeamRobot {
   @Override
   public void onHitWall(HitWallEvent e) {
     picaParet = true;
-    if (dir == -1 && Math.abs(e.getBearing()) >= 160.0) {
-      dir = 1;
-    } else if (dir == 1 && Math.abs(e.getBearing()) <= 20.0) {
-      dir = -1;
-    } else {
-      if (dir == 1) {
+    if (dir == -1) {
+        if (Math.abs(e.getBearing()) >= 160.0) {
+            dir = 1;
+        }
+    } else if (dir == 1) {
+        if (Math.abs(e.getBearing()) <= 20.0) {
+            dir = -1;
+        }
+    }
+
+    if (dir == 1) {
         setTurnRight(normalRelativeAngleDegrees(e.getBearing()));
         dir = -1;
-      } else {
-        setTurnRight(normalRelativeAngleDegrees(e.getBearing()+180));
+    } else {
+        setTurnRight(normalRelativeAngleDegrees(e.getBearing() + 180));
         dir = 1;
-      }
     }
+
   }
   
   @Override
   public void onRobotDeath(RobotDeathEvent e) {
-      pacific = false;
     if (e.getName().equals(objectiu)) {
+        pacific = false;
       if (getOthers() > 1) {
         prepObjectiu();
       } else {
@@ -185,6 +191,7 @@ public class PredatorRobot extends TeamRobot {
   @Override
   public void onMessageReceived(MessageEvent e){
       String walkieTalkie = e.getMessage().toString();
+      if(walkieTalkie.contains("pos")) return;
       String missatge[] = walkieTalkie.split(",");
       String victima = missatge[1];
       double distancia = Double.parseDouble(missatge[2]);
@@ -233,24 +240,24 @@ public class PredatorRobot extends TeamRobot {
 
   
   double piupiu(double dobjeciu) {
-    if (vidaobjeciu != 0.0) {
-      if (dobjeciu < getHeight()*1.5) {
-        return Rules.MAX_BULLET_POWER;
-      } else if (getEnergy() > 4*Rules.MAX_BULLET_POWER + 2*(Rules.MAX_BULLET_POWER - 1) || (getOthers() == 1 && getEnergy() > 3*Rules.MAX_BULLET_POWER)) {
-        if (dobjeciu <= d*2) {
-          return Rules.MAX_BULLET_POWER;
-        } else {
-          return Math.min(1.1 + (d*2) / dobjeciu, Rules.MAX_BULLET_POWER);
-        }
-      } else if (getEnergy() > 2.2) {
-        return 1.1;
-      } else {
-        return Math.max(0.1, getEnergy()/3);
-      }
-    } else {
-      return 0.1;
+    if (vidaobjeciu == 0.0) {
+        return 0.1;
     }
-  }
+
+    double distancia = getHeight() * 1.5;
+    double energia = getEnergy();
+
+    if (dobjeciu < distancia) {
+        return Rules.MAX_BULLET_POWER;
+    } else if ((energia > 4 * Rules.MAX_BULLET_POWER + 2 * (Rules.MAX_BULLET_POWER - 1) || (getOthers() == 1 && energia > 3 * Rules.MAX_BULLET_POWER)) && dobjeciu <= distancia * 2) {
+        return Rules.MAX_BULLET_POWER;
+    } else if (energia > 2.2) {
+        return Math.min(1.1 + (distancia * 2) / dobjeciu, Rules.MAX_BULLET_POWER);
+    } else {
+        return Math.max(0.1, energia / 3);
+    }
+}
+
   
   boolean anemAxocar(double r) {
     return getX() + getHeight()*r >= getBattleFieldWidth() || getX() - getHeight()*r <= 0.0 || getY() + getHeight()*r >= getBattleFieldHeight() || getY() - getHeight()*r <= 0.0;
