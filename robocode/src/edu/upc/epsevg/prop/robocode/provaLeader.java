@@ -69,8 +69,8 @@ public class provaLeader extends TeamRobot {
           if (enemics[i].equals("")) {
             enemics[i] = e.getName();
             disenemics[i] = e.getDistance();
-            Xenemics[i] = getX() + Math.sin(getHeading() * e.getBearing()) * e.getDistance();
-            Yenemics[i] = getY() + Math.cos(getHeading() * e.getBearing()) * e.getDistance();
+            Xenemics[i] = getX() + Math.sin(getHeading() + e.getBearing()) * e.getDistance();
+            Yenemics[i] = getY() + Math.cos(getHeading() + e.getBearing()) * e.getDistance();
             ORI[i] = e.getHeading();
             SP[i] = e.getVelocity();
             if (i == enemics.length-1) {
