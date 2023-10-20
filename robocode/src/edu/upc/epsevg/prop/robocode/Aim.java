@@ -8,6 +8,10 @@ import java.awt.Graphics2D;
 
 public class Aim extends TeamRobot{
     
+    public class Pair {
+        
+    }
+    
     boolean rot1 = false, rot2 = false;
     @Override
     public void run() {
@@ -16,9 +20,9 @@ public class Aim extends TeamRobot{
         setAdjustRadarForGunTurn(true);
         while(true) {
             if (rot1==false && rot2 == false)setTurnRadarRight(5000);
-            execute();
             if (rot1 == false) rot2 = false;
             rot1 = false;
+            execute();
         }
     }
     
