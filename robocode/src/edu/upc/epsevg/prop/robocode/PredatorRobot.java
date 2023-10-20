@@ -185,9 +185,6 @@ public class PredatorRobot extends TeamRobot {
     distobjeciu = disenemics[victima];
   }
   
-  
-  // en aquesta mateix fucnio es pot canviar l enemic, de manera que cada cop que rep
-  // un missatge canvia o no l objectiu, i aixi esta sempre en constant actualitxacio
   @Override
   public void onMessageReceived(MessageEvent e){
       String walkieTalkie = e.getMessage().toString();
@@ -195,7 +192,7 @@ public class PredatorRobot extends TeamRobot {
       String missatge[] = walkieTalkie.split(",");
       String victima = missatge[1];
       double distancia = Double.parseDouble(missatge[2]);
-      if(distobjeciu == 0.0 || distancia < distobjeciu) objectiu = victima; // l altre l ha detectat abans o esta mes a prop (el mateix)
+      if(distobjeciu == 0.0 || distancia < distobjeciu) objectiu = victima;
       out.println("victima: " + victima);
       out.println("objectiu: " + victima);
       String envia = "objectiu ,"+objectiu+","+distobjeciu;
@@ -205,7 +202,6 @@ public class PredatorRobot extends TeamRobot {
         } catch (IOException ex) {
           Logger.getLogger(Droid.class.getName()).log(Level.SEVERE, null, ex);
         }
-        // bucle infinit d enviament d informacio entre els membres de l equip
   }
   
  double ajustarRadar(double absBearing) {
