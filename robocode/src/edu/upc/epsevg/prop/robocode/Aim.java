@@ -8,24 +8,44 @@ import java.awt.Graphics2D;
 
 public class Aim extends TeamRobot{
     
+    boolean rot1 = false, rot2 = false;
     @Override
     public void run() {
         //fem independents els diferents elements del tanc
         setAdjustGunForRobotTurn(true);
         setAdjustRadarForGunTurn(true);
         while(true) {
-            setTurnRadarRight(5000);
+            if (rot1==false && rot2 == false)setTurnRadarRight(5000);
             execute();
+            if (rot1 == false) rot2 = false;
+            rot1 = false;
         }
     }
     
     @Override
     public void onScannedRobot(ScannedRobotEvent event) {
-        double finalRotate = aimCalc(event);
-        if ((finalRotate > 5 || finalRotate < -5)) {
-            setTurnGunRight(finalRotate);
-        }
-        //fire(Rules.MAX_BULLET_POWER);
+        
+        double Rotate = event.getBearing();
+        double gunDir = getRadarHeading();
+        double Dir = getHeading();
+        
+        double finalRotate = Dir - gunDir + Rotate;
+        finalRotate = finalRotate % 360;
+        if (finalRotate < -180) finalRotate = 360.0 - finalRotate;
+        if (finalRotate > 180) finalRotate = -360.0 + finalRotate;
+        if(finalRotate >= 0)setTurnRadarRight(finalRotate);
+        else setTurnRadarLeft(-finalRotate);
+        
+        rot1 = true; rot2 = true;
+        
+        double _finalRotate = aimCalc(event);
+        _finalRotate = _finalRotate%360;
+        if (_finalRotate < -180) _finalRotate = 360.0 - _finalRotate;
+        if (_finalRotate > 180) _finalRotate = -360.0 + _finalRotate;
+        if (_finalRotate > 0) setTurnGunRight(_finalRotate);
+        else setTurnGunLeft(-_finalRotate);
+        //System.out.println("final rotate: " + _finalRotate);
+        fire(Rules.MAX_BULLET_POWER);
     }
     
     double _X;
@@ -34,20 +54,8 @@ public class Aim extends TeamRobot{
     double X;
     double Y;
     public double aimCalc(ScannedRobotEvent event) {
-       /* double Rotate = event.getBearing();
-        double gunDir = getGunHeading();
-        double Dir = getHeading();
-        double a = Math.sqrt(64);
-        a++;
-        
-        
-        double finalRotate = Dir - gunDir + Rotate;
-        
-        
-        
-        if (finalRotate < -180) finalRotate = 360.0 - finalRotate;
-        if (finalRotate > 180) finalRotate = -360.0 + finalRotate;
-        return finalRotate;*/
+
+        //return finalRotate;
         _X = Math.sin(Math.toRadians(event.getBearing() + getHeading())) * event.getDistance() + getX();
         _Y = Math.cos(Math.toRadians(event.getBearing() + getHeading())) * event.getDistance() + getY();
         double _A = Math.cos(Math.toRadians(event.getHeading())) / Math.sin(Math.toRadians(event.getHeading()));
@@ -56,19 +64,18 @@ public class Aim extends TeamRobot{
         Y = _X*_A + _B;
         double d = aprox(X, Y, event.getVelocity()), minX = X, minD = d, maxX = Double.MAX_VALUE, maxD = Double.MAX_VALUE;
         boolean goUp = false;
-        X = X + 10 * Math.sin(Math.toRadians(event.getHeading()));
-        Y = X*_A + _B;
-        System.out.println(Math.sin(Math.toRadians(event.getHeading())));
-        for (int i = 0; i < 20; i++) {
+        /*X = X + 100 * Math.sin(Math.toRadians(event.getHeading()));
+        Y = X*_A + _B;*/
+        for (int i = 0; i < 40; i++) {
+            //System.out.println("it: " +i);
             d = aprox (X, Y, event.getVelocity());
             /*System.out.println("d: " + d);
             System.out.println("X: " + X);
             System.out.println("minX: " + minX);*/
-            System.out.println("maxX: " + maxX);
+            //System.out.println("maxX: " + maxX);
             if (d > minD && d < 0) {
                 minD = d;
                 minX = X;
-                goUp = false;
             }
             else if (d < maxD && d > 0) {
                 maxD = d;
@@ -87,7 +94,18 @@ public class Aim extends TeamRobot{
         if (Math.abs(minD) < Math.abs(maxD)) X = minX;
         else X = maxX;
         Y = _A*X + _B;
-        return 1;
+        double _angle = Math.toDegrees(Math.atan((X-getX()) / (Y-getY())));
+        if ((Y-getY()) < 0) _angle += 180;
+        System.out.println("_angle: " + _angle);
+        System.out.println("getGunHeading(): " + getGunHeading());
+        double ret = _angle - getGunHeading();
+        System.out.println("diff: " + ret);
+        /*System.out.println("ofi: " + (event.getBearing() + getHeading()));
+        System.out.println("angle: " + _angle + " heading: " + getHeading());*/
+        
+        //System.out.println("X: " +  (X-getX()) + " Y: " + (Y-getY()));
+        return ret;
+        //return event.getBearing() - getGunHeading() + getHeading();
     }
     
 // Paint a transparent square on top of the last scanned robot
@@ -101,6 +119,8 @@ public void onPaint(Graphics2D g) {
     // Draw a line from our robot to the scanned robot
     g.drawLine( _drawX,  _drawY, drawX, drawY);
     g.drawLine( -1000,(int)_B, 1000, (int)_B);
+    g.drawLine( -1000,0, 1000, 0);
+    g.drawLine( 0,-1000, 0, 1000);
     // Draw a filled square on top of the scanned robot that covers it
     g.fillRect( drawX - 20,  drawY - 20, 40, 40);
 }
@@ -110,8 +130,10 @@ public void onPaint(Graphics2D g) {
     }
     
     public double aprox(double X, double Y, double speed) {
-        
-        return Math.sqrt( PowTwo((X - _X)) + PowTwo((Y - _Y))) - (speed * Math.sqrt( PowTwo((X)) + PowTwo((Y))) / Rules.getBulletSpeed(Rules.MIN_BULLET_POWER));    
+        //System.out.println("stoopid: " + X + " : " + Y + " : " + speed + " : " + Rules.getBulletSpeed(Rules.MAX_BULLET_POWER));
+        double a = Math.sqrt( PowTwo(X - _X) + PowTwo(Y - _Y)) - (speed * Math.sqrt( PowTwo(X - getX()) + PowTwo(Y - getY())) / Rules.getBulletSpeed(Rules.MAX_BULLET_POWER));    
+        //System.out.println("stoopid: " + a);
+        return a;
     }
 }
 

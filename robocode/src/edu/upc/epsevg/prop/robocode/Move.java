@@ -12,8 +12,8 @@ public class Move extends TeamRobot{
         setAdjustGunForRobotTurn(true);
         setAdjustRadarForGunTurn(true);
         while(true) {
-            setAhead(getBattleFieldWidth()*0.1);
-            setTurnLeft(90);
+            setAhead(getBattleFieldWidth()*0.05);
+            //setTurnLeft(90);
             setTurnRadarRight(1000);
             execute();
             
