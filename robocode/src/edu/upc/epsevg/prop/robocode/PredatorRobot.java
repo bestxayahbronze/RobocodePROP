@@ -106,7 +106,7 @@ public class PredatorRobot extends TeamRobot {
     }
     double absBearing = e.getBearing() + getHeading();
     setTurnRadarRight(ajustarRadar(absBearing));
-    setTurnGunRightRadians(aimDef(e)*0.85);
+    setTurnGunRightRadians(aimDef(e));
     if(e.getEnergy() > 45){
         setFire(piupiu(e.getDistance()));
         pacific = false;
@@ -214,20 +214,23 @@ public class PredatorRobot extends TeamRobot {
 }
 
   
-  double aimDef(ScannedRobotEvent e) {
-    if (e.getEnergy() != 0.0) {
-      double absBearingRad = getHeadingRadians() + e.getBearingRadians();
-      double prediccio = e.getVelocity() * Math.sin(e.getHeadingRadians() - absBearingRad) / Rules.getBulletSpeed(piupiu(e.getDistance()));
-      if (e.getDistance() <= 12*10) {
-        prediccio *= 0.5;
-      } else if (e.getDistance() <= 12*5) {
-        prediccio *= 0.3;
-      }
-      return normalRelativeAngle(absBearingRad - getGunHeadingRadians() + prediccio);
-    } else {
-      return normalRelativeAngle(getHeadingRadians()+ e.getBearingRadians()- getGunHeadingRadians());
+    double aimDef(ScannedRobotEvent e) {
+        if (e.getEnergy() != 0.0) {
+            double absBearingRad = getHeadingRadians() + e.getBearingRadians();
+            double prediction = e.getVelocity() * Math.sin(e.getHeadingRadians() - absBearingRad) / Rules.getBulletSpeed(piupiu(e.getDistance()));
+
+            if (e.getDistance() <= 12 * 10) {
+                prediction *= 0.5;
+            } else if (e.getDistance() <= 12 * 5) {
+                prediction *= 0.3;
+            }
+
+            return normalRelativeAngle(absBearingRad - getGunHeadingRadians() + prediction);
+        } else {
+            return normalRelativeAngle(getHeadingRadians() + e.getBearingRadians() - getGunHeadingRadians());
+        }
     }
-  }
+
   
   double piupiu(double dobjeciu) {
     if (vidaobjeciu != 0.0) {
