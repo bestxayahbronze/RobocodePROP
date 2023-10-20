@@ -117,7 +117,7 @@ public class PredatorRobot extends TeamRobot {
   
   @Override
   public void onHitRobot(HitRobotEvent e) {
-    if(!objectiu.equals(e.getName())){
+    if(!objectiu.equals(e.getName()) && !pacific){
         dir *= -1;
     }
   }
